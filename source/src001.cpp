@@ -18,7 +18,7 @@ struct pixelGradient {
     double blue = 0.0;
     double alpha = 0.0;
 };
-
+//Hello Darkness My Old Friend
 struct pixelGradientInt {
     int red = 0;
     int green = 0;

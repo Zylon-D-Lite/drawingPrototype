@@ -10,7 +10,6 @@
 #include <tuple>
 #include <cmath>
 #include "linemanager.hpp"
-
 typedef png::image<png::rgba_pixel> ZImage;
 struct pixelGradient {
     double red = 0.0;
@@ -18,7 +17,6 @@ struct pixelGradient {
     double blue = 0.0;
     double alpha = 0.0;
 };
-//Hello Darkness My Old Friend
 struct pixelGradientInt {
     int red = 0;
     int green = 0;
@@ -67,6 +65,8 @@ std::vector<std::vector<std::pair<pixelGradient, pixelGradient>>>
         { 1, 0, -1},
         { 1, 0, -1}}
     };
+
+
     std::array<std::array<int, 3>, 3> yCoefficient{
       { { 1, 1, 1 },
         { 0, 0, 0 },
@@ -336,20 +336,20 @@ int hysterysisThreshold(png::image<png::rgba_pixel>& input_image,
 }
 #include <algorithm>
 int main() {
-    png::image<png::rgba_pixel> dum("/home/ineria/Desktop/powerranger.png");
-    makeBnW(dum);
-    gaussianFilter(dum, "/home/ineria/Desktop/new3.png");
-    auto gradients = sobelGradient(dum);
-    auto extractedGradients = gradientExtract(gradients);
-    nonMaximumSupress(dum, extractedGradients, "/home/ineria/Desktop/new4.png");
-    while (true) {
-        int i = hysterysisThreshold(dum, extractedGradients, 20);
-        std::clog << i << "\t" ;
-        if (i == 0)
-            break;
-    }
-    std::vector<int> io(5, 0);
-    dum.write("/home/ineria/Downloads/new4-2.png");
-    LineManager wtf(dum);
-    wtf.output_bash_file("/home/ineria/Desktop/lol-2.sh", 202, 44);
+    png::image<png::rgba_pixel> dum("/home/ineria/Downloads/chaosknight.png");
+    // makeBnW(dum);
+    // gaussianFilter(dum, "/home/ineria/Desktop/new3.png");
+    // auto gradients = sobelGradient(dum);
+    // auto extractedGradients = gradientExtract(gradients);
+    // nonMaximumSupress(dum, extractedGradients, "/home/ineria/Desktop/new4.png");
+    // while (true) {
+    //     int i = hysterysisThreshold(dum, extractedGradients, 20);
+    //     std::clog << i << "\t" ;
+    //     if (i == 0)
+    //         break;
+    // }
+    // std::vector<int> io(5, 0);
+    // dum.write("/home/ineria/Downloads/rougeknight-2.png");
+    // LineManager wtf(dum);
+    // wtf.output_bash_file("/home/ineria/Desktop/lol-2.sh", 202, 44);
 }

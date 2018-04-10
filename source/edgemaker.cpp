@@ -28,16 +28,16 @@ const std::vector<std::vector<int>> EdgeMaker::SOBEL_MATRIX_Y
 
 EdgeMaker::EdgeMaker
         (const png::image<png::rgb_pixel> & i_image,
-              const std::vector<std::vector<int>> i_blur_matrix_x,
-              const std::vector<std::vector<int>> i_blur_matrix_y,
+              const std::vector<std::vector<int>> i_edge_matrix_x,
+              const std::vector<std::vector<int>> i_edge_matrix_y,
               bool i_output_intermediate_images,
               bool i_output_final_image) :
 
          red_image(i_image.get_width(), i_image.get_height()),
          green_image(i_image.get_width(), i_image.get_height()),
          blue_image(i_image.get_width(), i_image.get_height()),
-         default_blur_matrix_x(i_blur_matrix_x),
-         default_blur_matrix_y(i_blur_matrix_y),
+         default_edge_matrix_x(i_edge_matrix_x),
+         default_edge_matrix_y(i_edge_matrix_y),
          output_intermediate_images(i_output_intermediate_images),
          output_final_image(i_output_final_image)
 {
@@ -48,12 +48,6 @@ EdgeMaker::EdgeMaker
 void EdgeMaker::gaussian_blur(png::image<png::gray_pixel>& i_img,
     unsigned kernal_size, double sigma) {
     auto filter_matrix = generate_gaussian_matrix(kernal_size, sigma);
-    for (auto r : filter_matrix) {
-        for (auto e : r) {
-            std::cout << e << "\t";
-        }
-        std::cout << std::endl;
-    }
     auto dummy_pixel = png::gray_pixel(255);
     int k = kernal_size / 2;
     //iterate through the pixels

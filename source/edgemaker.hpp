@@ -15,10 +15,12 @@ public:
 
 //! Constructor
     EdgeMaker(const png::image<png::rgb_pixel> & i_image,
-              const std::vector<std::vector<int>> i_blur_matrix_x,
-              const std::vector<std::vector<int>> i_blur_matrix_y,
-              bool i_output_intermediate_images,
-              bool i_output_final_image);
+              const std::vector<std::vector<int>> i_edge_matrix_x
+                 = PREWITT_MATRIX_X,
+              const std::vector<std::vector<int>> i_edge_matrix_y
+                 = PREWITT_MATRIX_Y,
+              bool i_output_intermediate_images = false,
+              bool i_output_final_image = true);
 
 //! One liner for making an edge for an image.
     void make_edges();
@@ -46,9 +48,9 @@ private:
     png::image<png::gray_pixel> blue_image;
 
     const std::vector<std::vector<int>> &
-        default_blur_matrix_x;
+        default_edge_matrix_x;
     const std::vector<std::vector<int>> &
-        default_blur_matrix_y;
+        default_edge_matrix_y;
 
     bool output_intermediate_images;
     bool output_final_image;

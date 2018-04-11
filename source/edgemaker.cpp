@@ -27,19 +27,16 @@ const std::vector<std::vector<int>> EdgeMaker::SOBEL_MATRIX_Y
 }};
 
 EdgeMaker::EdgeMaker
-        (const png::image<png::rgb_pixel> & i_image,
-              const std::vector<std::vector<int>> i_edge_matrix_x,
-              const std::vector<std::vector<int>> i_edge_matrix_y,
-              bool i_output_intermediate_images,
-              bool i_output_final_image) :
+        (const png::image<png::rgb_pixel> & i_image) :
 
          red_image(i_image.get_width(), i_image.get_height()),
          green_image(i_image.get_width(), i_image.get_height()),
          blue_image(i_image.get_width(), i_image.get_height()),
-         default_edge_matrix_x(i_edge_matrix_x),
-         default_edge_matrix_y(i_edge_matrix_y),
-         output_intermediate_images(i_output_intermediate_images),
-         output_final_image(i_output_final_image)
+         final_image(i_image.get_width(), i_image.get_height()),
+         default_edge_matrix_x(PREWITT_MATRIX_X),
+         default_edge_matrix_y(PREWITT_MATRIX_Y),
+         output_intermediate_images(false),
+         output_final_image(true)
 {
     split(i_image);
 }
@@ -106,13 +103,16 @@ void EdgeMaker::make_edges(double max_thershold, double min_thershold) {
         tempBlue.write("/home/ineria/Desktop/gradient_blue.png");
     }
 
+    merge();
+
     nonmaxinum_suppression(red_image, max_thershold, edge_values_red);
     nonmaxinum_suppression(green_image, max_thershold, edge_values_green);
     nonmaxinum_suppression(blue_image, max_thershold, edge_values_blue);
-
+    nonmaxinum_suppression(final_image, max_thershold, edge_values_final);
     red_image.write("/home/ineria/Desktop/supressed_red.png");
     green_image.write("/home/ineria/Desktop/supressed_green.png");
     blue_image.write("/home/ineria/Desktop/supressed_blue.png");
+    final_image.write("/home/ineria/Desktop/final.png");
 
 }
 void EdgeMaker::find_edge_and_orientation(png::image<png::gray_pixel> &i_img,
@@ -122,12 +122,17 @@ void EdgeMaker::find_edge_and_orientation(png::image<png::gray_pixel> &i_img,
         for (int y = 0; y < gradient_x.size(); ++y) {
             std::vector<std::pair<Gradient, Orientation>> row;
             for (int x = 0; x < gradient_x[0].size(); ++x) {
-                /*D.O.*/double g = sqrt(pow(gradient_x[y][x], 2)
+                //gradient is a measure of how much the pixel intensity changes
+                double g = sqrt(pow(gradient_x[y][x], 2)
                                    + pow(gradient_y[y][x], 2));
+
+                //theta gives you the direction of the gradient
                 double theta = atan2(gradient_y[y][x], gradient_x[y][x]);
+                //orientation splits the theta into eight equal sectors, corresponding to eight neighbour pixels
                 Orientation ori = lround(theta * M_PI_4) % 8;
                 row.push_back(std::make_pair(g, theta));
-                o_img[y][x] = 255 -(g / 6 + 127); //linear transformation of gradient
+                //gradients can have the range of [-765, 765] so they have to be mapped to [0, 255] range
+                o_img[y][x] = 255 -(g / 6 + 127);
             }
             i_edge_values.push_back(row);
         }
@@ -191,7 +196,7 @@ std::pair<int, int> EdgeMaker::give_orientation_offset(Orientation i_ori) {
         return std::make_pair(-1, 1);
     default:
         std::clog << "Orientation Error\n";
-        return std::make_pair(1, 1);
+        return std::make_pair(0, 0);
     }
 }
 std::vector<std::vector<double>> EdgeMaker::generate_gaussian_matrix
@@ -250,5 +255,24 @@ void EdgeMaker::split(const png::image<png::rgb_pixel>& i_image) {
             green_image[y][x] = i_image[y][x].green;
             blue_image[y][x] = i_image[y][x].blue;
         }
+    }
+}
+
+void EdgeMaker::merge() {
+    for (int y = 0; y < edge_values_red.size(); ++y) {
+        std::vector<std::pair<Gradient, Orientation>> row;
+        for (int x = 0; x < edge_values_red[0].size(); ++x) {
+            Gradient curr_gradient = (edge_values_red[y][x].first
+                                    + edge_values_green[y][x].first
+                                    + edge_values_blue[y][x].first) / 3;
+
+            // Orientation is sort of lame but I expect this to be adequate
+            Orientation curr_orientation = lround((edge_values_red[y][x].second
+                                            + edge_values_green[y][x].second
+                                            + edge_values_blue[y][x].second) / 3);
+
+            row.push_back(std::make_pair(curr_gradient, curr_orientation));
+        }
+        edge_values_final.push_back(row);
     }
 }

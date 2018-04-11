@@ -19,13 +19,7 @@ public:
     static const std::vector<std::vector<int>> PREWITT_MATRIX_Y;
 
 //! Constructor
-    EdgeMaker(const png::image<png::rgb_pixel> & i_image,
-              const std::vector<std::vector<int>> i_edge_matrix_x
-                 = PREWITT_MATRIX_X,
-              const std::vector<std::vector<int>> i_edge_matrix_y
-                 = PREWITT_MATRIX_Y,
-              bool i_output_intermediate_images = false,
-              bool i_output_final_image = true);
+    EdgeMaker(const png::image<png::rgb_pixel> & i_image);
 
 //! One liner for making an edge for an image.
     void make_edges(double max_thershold, double min_thershold);
@@ -49,6 +43,13 @@ public:
 //! Turns off all pixels whose gradient is less than give value
     void nonmaxinum_suppression(png::image<png::gray_pixel> &i_img,
          double i_threshold, EdgeData& i_edge_values);
+
+// Setters and Getters(getters coming soon!)
+    void set_edge_matrix(unsigned code);
+    void set_blur_technique(unsigned code);
+    void set_blur_variables(unsigned kernal_size, double sigma);
+    void set_output_final_image(bool choice);
+    void set_output_intermediate_image(bool choice);
 private:
 //! gradient calculation
     std::vector<std::vector<double>> calculate_gradient(
@@ -56,7 +57,8 @@ private:
         const std::vector<std::vector<int>> &edge_mat);
 //! Splits the given RGB image to 3 seperate images, one for each color band
     void split(const png::image<png::rgb_pixel>& i_image);
-
+//! Merges the three edgified images to one
+    void merge();
     std::vector<std::vector<double>> generate_gaussian_matrix
              (unsigned kernal_size, double sigma);
 
@@ -65,6 +67,7 @@ private:
     png::image<png::gray_pixel> red_image;
     png::image<png::gray_pixel> green_image;
     png::image<png::gray_pixel> blue_image;
+    png::image<png::gray_pixel> final_image;
 
     std::pair<int, int> give_orientation_offset(Orientation i_ori);
     const std::vector<std::vector<int>> &
@@ -75,6 +78,7 @@ private:
     EdgeData edge_values_red;
     EdgeData edge_values_green;
     EdgeData edge_values_blue;
+    EdgeData edge_values_final;
     bool output_intermediate_images;
     bool output_final_image;
 };

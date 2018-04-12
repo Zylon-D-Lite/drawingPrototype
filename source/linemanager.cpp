@@ -58,7 +58,7 @@ void LineManager::follow_path(const png::image<png::rgba_pixel>& i_image, size_t
         else if (checkNeighbours(i_image, y, x, BOTTOM_LEFT)[INDEX_BOTTOM_LEFT]) {
             l.getCoordinates().push_back(Coordinate{y++, x--});
         }
-        if (lastY == y && lastX == x)
+        if ((lastY == y && lastX == x) || y >= (height-1) || y <= 1 || x >= (width-1) || x <= 1)
             break;
         lastY = y; lastX = x;
     }
@@ -85,7 +85,8 @@ void LineManager::output_bash_file(const std::string& i_filePath,
     file.close();
 }
 LineManager::LineManager(const png::image<png::rgba_pixel>& i_image)
-    :height(i_image.get_height()), width(i_image.get_width()) {
+    :height(i_image.get_height()), width(i_image.get_width()),
+    stored_image(i_image) {
     for (size_t y = 1; y < height - 1; ++y) {
         for (size_t x = 1; x < width - 1; ++x) {
             if (isLit(i_image[y][x]) && !checkNeighbours(i_image, y, x,
@@ -98,4 +99,71 @@ LineManager::LineManager(const png::image<png::rgba_pixel>& i_image)
     std::uniform_int_distribution<unsigned> uid;
     std::cout << "Size = " << lineVector.size() << std::endl;
     std::shuffle(lineVector.begin(), lineVector.end(), dre);
+}
+
+LineManager::LineManager(const png::image<png::gray_pixel>& i_image)
+    : stored_image(i_image.get_width(), i_image.get_height()),
+        height(i_image.get_height()), width(i_image.get_width()) {
+    for (size_t y = 0; y < height; ++y) {
+        for (size_t x = 0; x < width; ++x) {
+            stored_image[y][x].red
+                = stored_image[y][x].green
+                = stored_image[y][x].blue
+                = i_image[y][x];
+            stored_image[y][x].alpha = 255;
+        }
+    }
+    for (size_t y = 1; y < height - 1; ++y) {
+        for (size_t x = 1; x < width - 1; ++x) {
+            if (isLit(stored_image[y][x]) && !checkNeighbours(stored_image, y, x,
+                TOP_LEFT | TOP | TOP_RIGHT | LEFT).to_ulong()) {
+                follow_path(stored_image, y, x);
+            }
+        }
+    }
+    // std::default_random_engine dre;
+    // std::uniform_int_distribution<unsigned> uid;
+     std::cout << "Size = " << lineVector.size() << std::endl;
+    // std::shuffle(lineVector.begin(), lineVector.end(), dre);
+    smart_shuffle();
+}
+
+void LineManager::smart_shuffle() {
+    for (int i = 0; i < lineVector.size(); ++i) {
+        if (lineVector[i].getCoordinates().empty())
+            continue;
+        Coordinate current_tail = lineVector[i].getCoordinates().front();
+        double closest_head = sqrt(pow(height, 2) + pow(width, 2));
+        double closest_tail = sqrt(pow(height, 2) + pow(width, 2));
+        size_t index_closest_head = i;
+        size_t index_closest_tail = i;
+        for (int j = i + 1; j < lineVector.size(); ++j) {
+            if (lineVector.at(j).getCoordinates().empty())
+                continue;
+            auto current_next_head = lineVector[j].getCoordinates().front();
+            auto current_next_tail = lineVector[j].getCoordinates().back();
+            double heads_distance = sqrt(pow(current_tail.x - current_next_head.x, 2)
+                                       + pow(current_tail.y - current_next_head.y, 2));
+            double head_tail_distance = sqrt(pow(current_tail.x - current_next_tail.x, 2)
+                                       + pow(current_tail.y - current_next_tail.y, 2));
+            if (heads_distance < closest_head) {
+                index_closest_head = j;
+                closest_head = heads_distance;
+            }
+
+            if (head_tail_distance < closest_tail) {
+                index_closest_head = j;
+                closest_tail = head_tail_distance;
+            }
+        }
+        if (closest_head <= closest_tail) {
+            lineVector[i + 1].getCoordinates()
+                .swap(lineVector[index_closest_head].getCoordinates());
+        } else {
+            std::reverse(lineVector[index_closest_tail].getCoordinates().begin(),
+                         lineVector[index_closest_tail].getCoordinates().end());
+            lineVector[i + 1].getCoordinates()
+                 .swap(lineVector[index_closest_tail].getCoordinates());
+        }
+    }
 }

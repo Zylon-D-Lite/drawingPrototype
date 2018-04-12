@@ -11,7 +11,7 @@ project: ./examples/test001 ./examples/test002 ./examples/test003
 ./examples/test002: ./objs/src001.o ./objs/line.o ./objs/linemanager.o ./objs/edgemaker.o
 	$(CPPFLAGS) -g -std=c++14 -L$(LIBPNGLIBPATH) $^ -l$(LIBPNGINCLUDEPATH) $(LIBPNGFLAGS) -o $@
 
-./examples/test003: ./objs/src002.o ./objs/edgemaker.o
+./examples/test003: ./objs/src002.o ./objs/edgemaker.o ./objs/linemanager.o ./objs/line.o
 	$(CPPFLAGS) -g -std=c++14 -L$(LIBPNGLIBPATH) $^ -l$(LIBPNGINCLUDEPATH) $(LIBPNGFLAGS) -o $@
 
 ./objs/src001.o : ./source/src001.cpp ./source/linemanager.hpp ./source/line.hpp

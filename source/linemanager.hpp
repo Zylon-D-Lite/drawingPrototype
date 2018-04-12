@@ -15,6 +15,7 @@ public:
     LineManager(const std::vector<Line> & i_lineVector) :
         lineVector(i_lineVector) { }
     LineManager(const png::image<png::rgba_pixel>& i_image);
+    LineManager(const png::image<png::gray_pixel>& i_image);
     void push_back(const Line& i_line)
         { lineVector.push_back(i_line);}
     void pop_back() { lineVector.pop_back(); }
@@ -41,6 +42,8 @@ private:
         INDEX_TOP_RIGHT,
         INDEX_RIGHT
     };
+
+    png::image<png::rgba_pixel> stored_image;
     //! Checks if a pixel's value is the same as given pixel.
     bool isLit(png::rgba_pixel i_curr,
     png::rgba_pixel i_lit = Line::WHITE_PIXEL);
@@ -57,5 +60,7 @@ private:
     png::rgba_pixel unlit_pixel = png::rgba_pixel(0, 0, 0, 255);
     size_t height = 0, width = 0;
     std::vector<Line> lineVector;
+
+    void smart_shuffle();
 };
 #endif //!ZDL_LINE_MANAGER_H

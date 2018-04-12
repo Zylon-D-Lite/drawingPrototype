@@ -27,14 +27,19 @@ const std::vector<std::vector<int>> EdgeMaker::SOBEL_MATRIX_Y
 }};
 
 EdgeMaker::EdgeMaker
-        (const png::image<png::rgb_pixel> & i_image) :
+        (const png::image<png::rgb_pixel> & i_image,
+         const std::string & i_output_filepath) :
 
+         output_filepath(i_output_filepath),
          red_image(i_image.get_width(), i_image.get_height()),
          green_image(i_image.get_width(), i_image.get_height()),
          blue_image(i_image.get_width(), i_image.get_height()),
          final_image(i_image.get_width(), i_image.get_height()),
          default_edge_matrix_x(PREWITT_MATRIX_X),
          default_edge_matrix_y(PREWITT_MATRIX_Y),
+         blur_technique(GAUSSIAN),
+         kernal_size(5),
+         sigma(1.4),
          output_intermediate_images(false),
          output_final_image(true)
 {
@@ -77,17 +82,21 @@ void EdgeMaker::make_edges(double max_thershold, double min_thershold) {
  * never really wanting since the scenerio of you actually buying it seems faker
  * than that sex scene of Johnny and Lisa in the movie "The Room".
  * */
-    red_image.write("/home/ineria/Desktop/normal_red.png");
-    green_image.write("/home/ineria/Desktop/normal_green.png");
-    blue_image.write("/home/ineria/Desktop/normal_blue.png");
+    if (output_intermediate_images) {
+        red_image.write("/home/ineria/Desktop/normal_red.png");
+        green_image.write("/home/ineria/Desktop/normal_green.png");
+        blue_image.write("/home/ineria/Desktop/normal_blue.png");
+    }
 
-    gaussian_blur(red_image, 5, 1.4);
-    gaussian_blur(green_image, 5, 1.4);
-    gaussian_blur(blue_image, 5, 1.4);
+    blur(red_image);
+    blur(green_image);
+    blur(blue_image);
 
-    red_image.write("/home/ineria/Desktop/blurred_red.png");
-    green_image.write("/home/ineria/Desktop/blurred_green.png");
-    blue_image.write("/home/ineria/Desktop/blurred_blue.png");
+    if (output_intermediate_images) {
+        red_image.write("/home/ineria/Desktop/blurred_red.png");
+        green_image.write("/home/ineria/Desktop/blurred_green.png");
+        blue_image.write("/home/ineria/Desktop/blurred_blue.png");
+    }
 
     png::image<png::gray_pixel> tempRed(red_image.get_width(), red_image.get_height());
     png::image<png::gray_pixel> tempGreen(red_image.get_width(), red_image.get_height());
@@ -109,11 +118,24 @@ void EdgeMaker::make_edges(double max_thershold, double min_thershold) {
     nonmaxinum_suppression(green_image, max_thershold, edge_values_green);
     nonmaxinum_suppression(blue_image, max_thershold, edge_values_blue);
     nonmaxinum_suppression(final_image, max_thershold, edge_values_final);
-    red_image.write("/home/ineria/Desktop/supressed_red.png");
-    green_image.write("/home/ineria/Desktop/supressed_green.png");
-    blue_image.write("/home/ineria/Desktop/supressed_blue.png");
-    final_image.write("/home/ineria/Desktop/final.png");
 
+    if (output_intermediate_images) {
+        red_image.write("/home/ineria/Desktop/supressed_red.png");
+        green_image.write("/home/ineria/Desktop/supressed_green.png");
+        blue_image.write("/home/ineria/Desktop/supressed_blue.png");
+    }
+    if (output_final_image)
+        final_image.write("/home/ineria/Desktop/final.png");
+
+}
+
+void EdgeMaker::blur(png::image<png::gray_pixel> &i_img) {
+    //if (blur_technique == GAUSSIAN) {
+        gaussian_blur(i_img, 5, 1.4);
+    //}
+    // else if (blur_technique == CHANGSHA) {
+    //     changsha_blur(kernal_size);
+    // }
 }
 void EdgeMaker::find_edge_and_orientation(png::image<png::gray_pixel> &i_img,
     png::image<png::gray_pixel>& o_img, EdgeData& i_edge_values) {
@@ -172,6 +194,21 @@ void EdgeMaker::nonmaxinum_suppression(png::image<png::gray_pixel> &i_img,
             }
             i_img[y][x] = 255;
         }
+    }
+}
+
+inline void EdgeMaker::set_edge_matrix(unsigned code) {
+    switch (code) {
+    case settings::SOBEL:
+        default_edge_matrix_x = SOBEL_MATRIX_X;
+        default_edge_matrix_y = SOBEL_MATRIX_Y;
+        break;
+    case settings::PREWITT:
+        default_edge_matrix_x = PREWITT_MATRIX_X;
+        default_edge_matrix_y = PREWITT_MATRIX_Y;
+    default:
+        std::clog << "WARNING: unrecognized matrix code applied to set_edge_matrix():"
+                  << "default values used" << std::endl;
     }
 }
 

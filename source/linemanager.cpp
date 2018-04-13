@@ -121,49 +121,77 @@ LineManager::LineManager(const png::image<png::gray_pixel>& i_image)
             }
         }
     }
-    // std::default_random_engine dre;
-    // std::uniform_int_distribution<unsigned> uid;
      std::cout << "Size = " << lineVector.size() << std::endl;
-    // std::shuffle(lineVector.begin(), lineVector.end(), dre);
-    smart_shuffle();
+    smart_rearrange();
 }
 
-void LineManager::smart_shuffle() {
+void LineManager::smart_rearrange() {
+    int debug_count = 1;
     for (int i = 0; i < lineVector.size(); ++i) {
         if (lineVector[i].getCoordinates().empty())
             continue;
-        Coordinate current_tail = lineVector[i].getCoordinates().front();
+        Coordinate current_tail = lineVector[i].getCoordinates().back();
         double closest_head = sqrt(pow(height, 2) + pow(width, 2));
         double closest_tail = sqrt(pow(height, 2) + pow(width, 2));
-        size_t index_closest_head = i;
-        size_t index_closest_tail = i;
+        size_t index_closest_head = i + 1;
+        size_t index_closest_tail = i + 1;
         for (int j = i + 1; j < lineVector.size(); ++j) {
             if (lineVector.at(j).getCoordinates().empty())
                 continue;
             auto current_next_head = lineVector[j].getCoordinates().front();
             auto current_next_tail = lineVector[j].getCoordinates().back();
-            double heads_distance = sqrt(pow(current_tail.x - current_next_head.x, 2)
-                                       + pow(current_tail.y - current_next_head.y, 2));
-            double head_tail_distance = sqrt(pow(current_tail.x - current_next_tail.x, 2)
-                                       + pow(current_tail.y - current_next_tail.y, 2));
-            if (heads_distance < closest_head) {
+            double tail_head_distance = sqrt(pow((int)current_tail.x - (int)current_next_head.x, 2)
+                                       + pow((int)current_tail.y - (int)current_next_head.y, 2));
+            double tails_distance = sqrt(pow((int)current_tail.x - (int)current_next_tail.x, 2)
+                                       + pow((int)current_tail.y - (int)current_next_tail.y, 2));
+            if (tail_head_distance < closest_head) {
                 index_closest_head = j;
-                closest_head = heads_distance;
+                closest_head = tail_head_distance;
             }
 
-            if (head_tail_distance < closest_tail) {
-                index_closest_head = j;
-                closest_tail = head_tail_distance;
+            if (tails_distance < closest_tail) {
+                index_closest_tail = j;
+                closest_tail = tails_distance;
             }
         }
+        if (closest_tail > 50 && closest_tail <= closest_head) {
+            std::cout << "far away" << std::endl;
+        }
+        if (closest_head > 50 && closest_head < closest_tail) {
+            std::cout << "far away head" << std::endl;
+        }
         if (closest_head <= closest_tail) {
+            // if (debug_count == 1) {
+            //     std::cout << "before: i+ 1" << std::endl;
+            //     for (auto a : lineVector[i + 1].getCoordinates()) {
+            //         std::cout << a.x << ":" << a.y << "\t";
+            //     }
+            //     std::cout << "\nindex_closest_head" << std::endl;
+            //     for (auto b : lineVector[index_closest_head].getCoordinates()) {
+            //         std::cout << b.x << ":" << b.y << '\t';
+            //     }
+            // }
             lineVector[i + 1].getCoordinates()
                 .swap(lineVector[index_closest_head].getCoordinates());
+
+            // if (debug_count == 1) {
+            //     std::cout << "after: i + 1" << std::endl;
+            //     for (auto a : lineVector[i + 1].getCoordinates()) {
+            //         std::cout << a.x << ":" << a.y << "\t";
+            //     }
+            //     std::cout << "\nindex_closest_head" << std::endl;
+            //     for (auto b : lineVector[index_closest_head].getCoordinates()) {
+            //         std::cout << b.x << ":" << b.y << '\t';
+            //     }
+            // }
+            ++debug_count;
+            //std::cout << "a swap happened. ";
         } else {
             std::reverse(lineVector[index_closest_tail].getCoordinates().begin(),
                          lineVector[index_closest_tail].getCoordinates().end());
             lineVector[i + 1].getCoordinates()
                  .swap(lineVector[index_closest_tail].getCoordinates());
+            //std::cout << "a reverse swap happened. ";
         }
     }
 }

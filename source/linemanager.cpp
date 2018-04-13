@@ -126,7 +126,6 @@ LineManager::LineManager(const png::image<png::gray_pixel>& i_image)
 }
 
 void LineManager::smart_rearrange() {
-    int debug_count = 1;
     for (int i = 0; i < lineVector.size(); ++i) {
         if (lineVector[i].getCoordinates().empty())
             continue;
@@ -161,37 +160,14 @@ void LineManager::smart_rearrange() {
             std::cout << "far away head" << std::endl;
         }
         if (closest_head <= closest_tail) {
-            // if (debug_count == 1) {
-            //     std::cout << "before: i+ 1" << std::endl;
-            //     for (auto a : lineVector[i + 1].getCoordinates()) {
-            //         std::cout << a.x << ":" << a.y << "\t";
-            //     }
-            //     std::cout << "\nindex_closest_head" << std::endl;
-            //     for (auto b : lineVector[index_closest_head].getCoordinates()) {
-            //         std::cout << b.x << ":" << b.y << '\t';
-            //     }
-            // }
             lineVector[i + 1].getCoordinates()
                 .swap(lineVector[index_closest_head].getCoordinates());
 
-            // if (debug_count == 1) {
-            //     std::cout << "after: i + 1" << std::endl;
-            //     for (auto a : lineVector[i + 1].getCoordinates()) {
-            //         std::cout << a.x << ":" << a.y << "\t";
-            //     }
-            //     std::cout << "\nindex_closest_head" << std::endl;
-            //     for (auto b : lineVector[index_closest_head].getCoordinates()) {
-            //         std::cout << b.x << ":" << b.y << '\t';
-            //     }
-            // }
-            ++debug_count;
-            //std::cout << "a swap happened. ";
         } else {
             std::reverse(lineVector[index_closest_tail].getCoordinates().begin(),
                          lineVector[index_closest_tail].getCoordinates().end());
             lineVector[i + 1].getCoordinates()
                  .swap(lineVector[index_closest_tail].getCoordinates());
-            //std::cout << "a reverse swap happened. ";
         }
     }
 }

@@ -61,6 +61,10 @@ private:
 
     //! Greedy follows the 'lit' pixels, starting from a given pixel.
     void follow_path(const png::image<png::rgba_pixel>& , size_t y, size_t x);
+
+    //! Better path follow algorithm
+    std::vector<Coordinate> follow_path_version_2
+         (const png::image<png::rgba_pixel>&, size_t y, size_t x);
     //! Rearrange the line data so that there is less distance between lines
     void smart_rearrange();
 };

@@ -88,9 +88,9 @@ void EdgeMaker::make_edges(double max_thershold, double min_thershold) {
         blue_image.write("/home/ineria/Desktop/normal_blue.png");
     }
 
-    blur(red_image);
-    blur(green_image);
-    blur(blue_image);
+    //blur(red_image);
+    //blur(green_image);
+    //blur(blue_image);
 
     if (output_intermediate_images) {
         red_image.write("/home/ineria/Desktop/blurred_red.png");

@@ -18,6 +18,11 @@ struct Coordinate {
     unsigned y;
     unsigned x;
 
+    Coordinate& operator=(const Coordinate& other) {
+        y = other.y;
+        x = other.x;
+        return *this;
+    }
     bool operator==(const Coordinate &other)
         const { return (y == other.y && x == other.x); }
     bool operator!=(const Coordinate &other)

@@ -42,29 +42,6 @@ std::bitset<8> LineManager::checkNeighbours(
     return ret;
 }
 
-void LineManager::follow_path(const png::image<png::rgba_pixel>& i_image, size_t y, size_t x) {
-    size_t lastY = y, lastX = x;
-    Line l;
-    while (true) {
-        if (checkNeighbours(i_image, y, x, RIGHT)[INDEX_RIGHT]) {
-            l.getCoordinates().push_back(Coordinate{ y, x++});
-        }
-        else if (checkNeighbours(i_image, y, x, BOTTOM_RIGHT)[INDEX_BOTTOM_RIGHT]) {
-            l.getCoordinates().push_back(Coordinate{y++, x++});
-        }
-        else if (checkNeighbours(i_image, y, x, BOTTOM)[INDEX_BOTTOM]) {
-            l.getCoordinates().push_back(Coordinate{y++, x});
-        }
-        else if (checkNeighbours(i_image, y, x, BOTTOM_LEFT)[INDEX_BOTTOM_LEFT]) {
-            l.getCoordinates().push_back(Coordinate{y++, x--});
-        }
-        if ((lastY == y && lastX == x) || y >= (height-1) || y <= 1 || x >= (width-1) || x <= 1)
-            break;
-        lastY = y; lastX = x;
-    }
-    lineVector.push_back(l);
-}
-
 void LineManager::output_bash_file(const std::string& i_filePath,
         unsigned topLeftX, unsigned topLeftY) {
     std::ofstream file(i_filePath);
@@ -84,6 +61,7 @@ void LineManager::output_bash_file(const std::string& i_filePath,
     }
     file.close();
 }
+
 LineManager::LineManager(const png::image<png::rgba_pixel>& i_image)
     :height(i_image.get_height()), width(i_image.get_width()),
     stored_image(i_image) {
@@ -125,6 +103,44 @@ LineManager::LineManager(const png::image<png::gray_pixel>& i_image)
     smart_rearrange();
 }
 
+
+void LineManager::follow_path(const png::image<png::rgba_pixel>& i_image, size_t y, size_t x) {
+    size_t lastY = y, lastX = x;
+    Line l;
+    while (true) {
+        if (checkNeighbours(i_image, y, x, RIGHT)[INDEX_RIGHT]) {
+            l.getCoordinates().push_back(Coordinate{ y, x++});
+        }
+        else if (checkNeighbours(i_image, y, x, BOTTOM_RIGHT)[INDEX_BOTTOM_RIGHT]) {
+            l.getCoordinates().push_back(Coordinate{y++, x++});
+        }
+        else if (checkNeighbours(i_image, y, x, BOTTOM)[INDEX_BOTTOM]) {
+            l.getCoordinates().push_back(Coordinate{y++, x});
+        }
+        else if (checkNeighbours(i_image, y, x, BOTTOM_LEFT)[INDEX_BOTTOM_LEFT]) {
+            l.getCoordinates().push_back(Coordinate{y++, x--});
+        }
+        if ((lastY == y && lastX == x) || y >= (height-1) || y <= 1 || x >= (width-1) || x <= 1)
+            break;
+        lastY = y; lastX = x;
+    }
+    lineVector.push_back(l);
+}
+
+std::vector<Coordinate> LineManager::follow_path_version_2
+    (const png::image<png::rgba_pixel>& i_image, size_t y, size_t x) {
+    size_t lastY = y, lastX= x;
+    Line l;
+    while (true) {
+        std::bitset<8> current_bit_pattern =
+             checkNeighbours(i_image, y, x,
+                 RIGHT|BOTTOM_RIGHT|BOTTOM|BOTTOM_LEFT);
+        // if more than one bit is on, there is a branch
+        if (current_bit_pattern.count() > 1) {
+            
+        }
+    }
+}
 void LineManager::smart_rearrange() {
     for (int i = 0; i < lineVector.size(); ++i) {
         if (lineVector[i].getCoordinates().empty())

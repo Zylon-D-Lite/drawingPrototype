@@ -59,6 +59,7 @@ private:
         size_t y, size_t x, unsigned char, png::rgba_pixel
         checkAgainstPixel = Line::WHITE_PIXEL);
 
+
     //! Greedy follows the 'lit' pixels, starting from a given pixel.
     void follow_path(const png::image<png::rgba_pixel>& , size_t y, size_t x);
 

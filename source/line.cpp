@@ -1,4 +1,4 @@
-#include "line.hpp"
+#include "./line.hpp"
 
 const png::rgba_pixel Line::WHITE_PIXEL = png::rgba_pixel(255, 255, 255, 255);
 const png::rgba_pixel Line::BLACK_PIXEL = png::rgba_pixel(0, 0, 0, 255);
@@ -54,4 +54,14 @@ std::pair<bool, std::string> Line::check() {
     if (!noProblems)
         return std::pair<bool, std::string>(false, returnMessage);
     return std::pair<bool, std::string>(true, "No problems detected");
+}
+
+inline void Line::insert(size_t offset, const Coordinate& input) {
+    lineData.insert(lineData.begin() + offset, input);
+}
+
+void Line::append(const std::vector<Coordinate>::iterator& beg_it,
+                const std::vector<Coordinate>::iterator& end_it)
+{
+    lineData.insert(lineData.end(), beg_it, end_it);
 }

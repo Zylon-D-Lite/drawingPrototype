@@ -15,8 +15,8 @@
  * since only the coordinates are necessary to draw the picture in a canvas.
  */
 struct Coordinate {
-    unsigned y;
-    unsigned x;
+    int y;
+    int x;
 
     Coordinate& operator=(const Coordinate& other) {
         y = other.y;
@@ -29,6 +29,8 @@ struct Coordinate {
         const { return !(*this == other); }
 private:
 };
+
+
 class Line {
 public:
     static const png::rgba_pixel WHITE_PIXEL;
@@ -37,14 +39,44 @@ public:
     static const png::rgba_pixel RED_PIXEL;
     static const png::rgba_pixel GREEN_PIXEL;
     static const png::rgba_pixel BLUE_PIXEL;
+
+// Constructors
     Line() = default;
-    std::pair<bool, std::string> check(     //!<Checks the continuity and the color value against an image
+    Line(const std::vector<Coordinate>& ivec) :
+        lineData(ivec) { }
+    Line(const std::vector<Coordinate>::iterator& beg_it,
+         const std::vector<Coordinate>::iterator& end_it)
+        : lineData(beg_it, end_it) { }
+//! Checks the continuity and the color value against an image
+    std::pair<bool, std::string> check(
              const png::image<png::rgba_pixel>& i_image,
              png::rgba_pixel i_on_pixel = png::rgba_pixel(255, 255, 255, 255));
-    std::pair<bool, std::string> check();     //!<Checks if the line is continuous
+//! Checks if the line is continuous
+    std::pair<bool, std::string> check();
+
+// Getters and setters
+    std::vector<Coordinate>& getCoordinates() { return lineData; }
+
+// Inserting and removing elements
     void push_back(Coordinate i_dot) { lineData.push_back(i_dot); }
     void pop_back() { lineData.pop_back(); }
-    std::vector<Coordinate>& getCoordinates() { return lineData; }
+    void insert(size_t offset, const Coordinate& input);
+    void append(const std::vector<Coordinate>::iterator& beg_it,
+                const std::vector<Coordinate>::iterator& end_it);
+
+// Iterators
+    std::vector<Coordinate>::iterator begin() { return lineData.begin(); }
+    std::vector<Coordinate>::iterator end() { return lineData.end(); }
+
+    std::vector<Coordinate>::const_iterator cbegin() { return lineData.cbegin(); }
+    std::vector<Coordinate>::const_iterator cend() { return lineData.cend(); }
+
+// Operators
+    Coordinate& operator[](unsigned long index) { return lineData[index]; }
+const Coordinate& operator[](unsigned long index) const { return lineData[index]; }
+
+// Size
+    auto size() { return lineData.size(); }
 private:
     bool isAdjacent(Coordinate i_current, Coordinate i_adjacent);
     std::vector<Coordinate> lineData;

@@ -3,7 +3,7 @@
 
 Polynomial Interpolator::newton_divided_difference(Line a_line) {
     std::sort(a_line.begin(), a_line.end(),
-         [](const Coordinate& a, const Coordinate& b)->bool {return a.y < b.y; });
+         [](const Coordinate& a, const Coordinate& b)->bool {return a.x < b.x; });
 
 // prepare the divided differences
     for (int i = 0; i < a_line.size(); ++i) {
@@ -16,12 +16,17 @@ Polynomial Interpolator::newton_divided_difference(Line a_line) {
     for (int i = 0; i < a_line.size(); ++i) {
         x_points.push_back(a_line[i].x);
     }
+    std::cout << "X_Points: \n";
+    for (auto x : x_points)
+        std::cout << x << "  ";
+    std::cout <<'\n';
     for (int i = 0; i < divided_differences.size(); ++i) {
         auto temp = newton_calculate_single_term
              (std::vector<int>(x_points.begin(), x_points.begin() + i));
-        //std::cout << "temp = " << temp.to_string() << "\t";
-        //std::cout << "divided_differences[i] = " << divided_differences[i] << std::endl;
-        //std::cout << "temp * divided_differences = " << (temp * divided_differences[i]).to_string() << std::endl;
+        temp.prettify();
+        std::cout << "i = " << i << ", " << "temp = " << temp.to_string() << "\n"
+                  << "divided_differences[i] = " << divided_differences[i] << '\n'
+                  <<"============================================================================================\n";
         ret.append(temp * divided_differences[i]);
     }
     ret.prettify();

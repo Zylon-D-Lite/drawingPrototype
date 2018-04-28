@@ -1,33 +1,51 @@
-CPPFLAGS=g++
-LIBPNGLIBPATH =/usr/local/lib/
-LIBPNGINCLUDEPATH=png
+CXX=g++
+LIBPNGPATH =/usr/local/lib/
+LIBPNG=png
 LIBPNGFLAGS=`libpng-config --cflags`
 
-project: ./examples/test001 ./examples/test002 ./examples/test003
+project: ./examples/test001 ./examples/test002 ./examples/test003 ./debug/debug ./examples/delaunay
+
+./examples/delaunay: ./objs/triangluation-test.o ./objs/delaunay.o
+	$(CXX) -g -std=c++14 -L$(LIBPNGPATH) $^ -l$(LIBPNG) $(LIBPNGFLAGS) -o $@
+
+./objs/triangluation-test.o : ./source/triangulation-test.cpp ./objs/delaunay.o ./objs/triangle.o
+	$(CXX) -g -c -std=c++14 $< -o $@
+
+./debug/debug: ./objs/debug.o ./objs/delaunay.o ./objs/triangle.o
+	$(CXX) -g -std=c++14 -L$(LIBPNGPATH) $^ -l$(LIBPNG) $(LIBPNGFLAGS) -o $@
+
+./objs/debug.o : ./source/debug.cpp ./objs/delaunay.o ./objs/triangle.o
+	$(CXX) -g -c -std=c++14  $<  -o $@
+
+./objs/triangle.o : ./source/triangle.cpp ./source/triangle.hpp
+	$(CXX) -g -c -std=c++14 $< -o $@
+
+./objs/delaunay.o : ./source/delaunay.cpp ./source/delaunay.hpp ./source/triangle.hpp
+	$(CXX) -g -c -std=c++14  $<  -o $@
 
 ./examples/test001: ./source/main.cpp
-	$(CPPFLAGS) -g -std=c++14 -L$(LIBPNGLIBPATH) $< -lpng -o $@
+	$(CXX) -g -std=c++14 -L$(LIBPNGPATH) $< -lpng -o $@
 
 ./examples/test002: ./objs/src001.o ./objs/line.o ./objs/linemanager.o ./objs/edgemaker.o
-	$(CPPFLAGS) -g -std=c++14 -L$(LIBPNGLIBPATH) $^ -l$(LIBPNGINCLUDEPATH) $(LIBPNGFLAGS) -o $@
+	$(CXX) -g -std=c++14 -L$(LIBPNGPATH) $^ -l$(LIBPNG) $(LIBPNGFLAGS) -o $@
 
 ./examples/test003: ./objs/src002.o ./objs/edgemaker.o ./objs/linemanager.o ./objs/line.o
-	$(CPPFLAGS) -g -std=c++14 -L$(LIBPNGLIBPATH) $^ -l$(LIBPNGINCLUDEPATH) $(LIBPNGFLAGS) -o $@
+	$(CXX) -g -std=c++14 -L$(LIBPNGPATH) $^ -l$(LIBPNG) $(LIBPNGFLAGS) -o $@
 
 ./objs/src001.o : ./source/src001.cpp ./source/linemanager.hpp ./source/line.hpp
-	$(CPPFLAGS) -g -c -std=c++14 -L$(LIBPNGLIBPATH) $< -l$(LIBPNGINCLUDEPATH) $(LIBPNGFLAGS) -o $@
+	$(CXX) -g -c -std=c++14 -L$(LIBPNGPATH) $< -l$(LIBPNG) $(LIBPNGFLAGS) -o $@
 
 ./objs/src002.o: ./source/src002.cpp  ./source/edgemaker.cpp ./source/edgemaker.hpp
-	$(CPPFLAGS) -g -c -std=c++14 -L$(LIBPNGLIBPATH) ./source/src002.cpp -l$(LIBPNGINCLUDEPATH) $(LIBPNGFLAGS) -o $@
+	$(CXX) -g -c -std=c++14 -L$(LIBPNGPATH) ./source/src002.cpp -l$(LIBPNG) $(LIBPNGFLAGS) -o $@
 
 ./objs/line.o : ./source/line.cpp ./source/line.hpp
-	$(CPPFLAGS) -g -c -std=c++14 -L$(LIBPNGLIBPATH) $< -l$(LIBPNGINCLUDEPATH) $(LIBPNGFLAGS) -o $@
+	$(CXX) -g -c -std=c++14 -L$(LIBPNGPATH) $< -l$(LIBPNG) $(LIBPNGFLAGS) -o $@
 
 ./objs/linemanager.o : ./source/linemanager.cpp ./source/linemanager.hpp
-	$(CPPFLAGS) -g -c -std=c++14 -L$(LIBPNGLIBPATH) $< -l$(LIBPNGINCLUDEPATH) $(LIBPNGFLAGS) -o $@
+	$(CXX) -g -c -std=c++14 -L$(LIBPNGPATH) $< -l$(LIBPNG) $(LIBPNGFLAGS) -o $@
 
 ./objs/edgemaker.o: ./source/edgemaker.cpp ./source/edgemaker.hpp
-	$(CPPFLAGS) -g -c -std=c++14 -L$(LIBPNGLIBPATH) $< -l$(LIBPNGINCLUDEPATH) $(LIBPNGFLAGS) -o $@
+	$(CXX) -g -c -std=c++14 -L$(LIBPNGPATH) $< -l$(LIBPNG) $(LIBPNGFLAGS) -o $@
 
 clean :
 	rm ./objs/*

@@ -2,19 +2,30 @@ CXX=g++
 LIBPNGPATH =/usr/local/lib/
 LIBPNG=png
 LIBPNGFLAGS=`libpng-config --cflags`
+OUT_DIR= ./objs/ ./debug/ ./examples/
+MKDIR_P= mkdir -p
+.PHONY : directories
 
-project: ./examples/test001 ./examples/test002 ./examples/test003 ./debug/debug ./examples/delaunay
+all: directories ./examples/test001 ./examples/test002 ./examples/test003 ./debug/debug ./examples/delaunay
 
-./examples/delaunay: ./objs/triangluation-test.o ./objs/delaunay.o
+directories: ${OUT_DIR}
+
+${OUT_DIRS} :
+	${MKDIR_P} ${OUT_DIR}
+
+./examples/delaunay: ./objs/triangluation-test.o ./objs/delaunay.o ./objs/artist.o
 	$(CXX) -g -std=c++14 -L$(LIBPNGPATH) $^ -l$(LIBPNG) $(LIBPNGFLAGS) -o $@
 
-./objs/triangluation-test.o : ./source/triangulation-test.cpp ./objs/delaunay.o ./objs/triangle.o
+./objs/triangluation-test.o : ./source/triangulation-test.cpp ./objs/delaunay.o ./objs/triangle.o ./objs/artist.o
 	$(CXX) -g -c -std=c++14 $< -o $@
 
-./debug/debug: ./objs/debug.o ./objs/delaunay.o ./objs/triangle.o
+./debug/debug: ./objs/debug.o ./objs/delaunay.o ./objs/triangle.o ./objs/artist.o
 	$(CXX) -g -std=c++14 -L$(LIBPNGPATH) $^ -l$(LIBPNG) $(LIBPNGFLAGS) -o $@
 
-./objs/debug.o : ./source/debug.cpp ./objs/delaunay.o ./objs/triangle.o
+./objs/artist.o : ./source/artist.cpp ./source/artist.hpp
+	$(CXX) -g -c -std=c++14 $< -o $@
+
+./objs/debug.o : ./source/debug.cpp ./objs/delaunay.o ./objs/triangle.o ./objs/artist.o
 	$(CXX) -g -c -std=c++14  $<  -o $@
 
 ./objs/triangle.o : ./source/triangle.cpp ./source/triangle.hpp

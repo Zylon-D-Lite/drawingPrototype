@@ -1,4 +1,5 @@
 #include "./delaunay.hpp"
+#include "./artist.hpp"
 #include <random>
 #include <png++/png.hpp>
 
@@ -19,6 +20,16 @@ int main() {
     for (int i = 0; i < 200; ++i) {
         v_points.emplace_back(ui1280(e), ui720(e));
     }
-    d.triangulate(v_points, img, png::rgb_pixel(0, 0, 0));
+    auto triangles = d.triangulate(v_points);
+    Artist a;
+    for (auto t : triangles) {
+
+        a.draw(img, t.ab(), png::rgb_pixel(0, 0, 0));
+        a.draw(img, t.bc(), png::rgb_pixel(0, 0, 0));
+        a.draw(img, t.ac(), png::rgb_pixel(0, 0, 0));
+    }
+    a.draw(img, triangles.front().ab(), png::rgb_pixel(255, 0, 0));
+    a.draw(img, triangles.front().bc(), png::rgb_pixel(255, 0, 0));
+    a.draw(img, triangles.front().ac(), png::rgb_pixel(255, 0, 0));
     img.write("./delaunay-wallpaper.png");
 }

@@ -1,6 +1,7 @@
 #include "./delaunay.hpp"
 #include "./triangle.hpp"
 #include "./artist.hpp"
+#include <iostream>
 #include <random>
 int main() {
 
@@ -33,13 +34,26 @@ int main() {
             v_point.push_back(Coordinate<double>(uid(e), uid(e)));
         }
         auto triangles = d.triangulate(v_point);
+        std::cout << "i = " << i << ", triangle size() = " << triangles.size() << std::endl;
         for (auto t : triangles) {
             a.draw(img, t.ab(), png::gray_pixel(255));
             a.draw(img, t.bc(), png::gray_pixel(255));
             a.draw(img, t.ac(), png::gray_pixel(255));
+            a.color(img, t, png::gray_pixel(255));
         }
         img.write("./debug/triangulate-" + std::to_string(i) + "-d.png");
 
     }
     debug_image.write("./debug/edge-perpen-d.png");
+    png::image<png::rgb_pixel> one_triangle(200, 200);
+    std::default_random_engine e;
+    std::uniform_int_distribution<> uid(0, 199);
+    Triangle<double> o(Coordinate<double>(uid(e), uid(e)),
+                       Coordinate<double>(uid(e), uid(e)),
+                       Coordinate<double>(uid(e), uid(e)));
+    a.draw(one_triangle, o.ab(), png::rgb_pixel(255, 0, 0));
+    a.draw(one_triangle, o.bc(), png::rgb_pixel(255, 0, 0));
+    a.draw(one_triangle, o.ac(), png::rgb_pixel(255, 0, 0));
+    a.color(one_triangle, o, png::rgb_pixel(0, 255, 0));
+    one_triangle.write("./debug/color-d.png");
 }

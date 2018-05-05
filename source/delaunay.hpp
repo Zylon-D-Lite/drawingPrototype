@@ -61,7 +61,9 @@ template<typename T1, typename T2>
 
 template<typename T>
 std::vector<Triangle<T>> Delaunay::triangulate(const std::vector<Coordinate<T>>&points) {
-
+    if (points.size() == 3) {
+        return std::vector<Triangle<T>>({Triangle<T>(points[0], points[1], points[2])});
+    }
     //find the boundings dimensions of the coordinates
     auto min_x_iter = std::min_element(points.begin(), points.end(), [] (const Coordinate<T>& a, const Coordinate<T>& b)
         ->bool { return a.x() < b.x(); });
@@ -76,9 +78,9 @@ std::vector<Triangle<T>> Delaunay::triangulate(const std::vector<Coordinate<T>>&
     double width = max_x_iter->x() - min_x_iter->x();
     double height = max_y_iter->y() - min_y_iter->y();
     //create a super triangle encompassing the image
-    Coordinate<T> point_a(lround(width / -2.0), 0);
-    Coordinate<T> point_b(lround(width * 1.5), 0);
-    Coordinate<T> point_c(lround(width / 2), height * 2);
+    Coordinate<T> point_a(lround(min_x_iter->x() - width), 0);
+    Coordinate<T> point_b(lround(width + max_x_iter->x()), 0);
+    Coordinate<T> point_c(lround(width / 2 + min_x_iter->x()), height * 2 + min_y_iter->y());
 
     Triangle<T> big_triangle(point_a, point_b, point_c);
 
@@ -122,7 +124,23 @@ std::vector<Triangle<T>> Delaunay::triangulate(const std::vector<Coordinate<T>>&
         }
     }
     std::vector<Triangle<T>> ret;
-    ret.push_back(big_triangle);
+    std::cout << "triangle_buffer.size() = "
+              << triangle_buffer.size()
+              << std::endl;
+    if (triangle_buffer.size() == 7) {
+        std::cout << "points::: ";
+        for (auto p : points) {
+            std::cout << p.to_string() << '\t';
+        }
+        std::cout << std::endl;
+        std::cout << "big triangle:\n"
+                 << big_triangle.to_string() << std::endl;
+        for (auto t : triangle_buffer) {
+            std::cout << "----------------------------------------\n";
+            std::cout << t.to_string() << std::endl;
+            std::cout << "----------------------------------------\n";
+        }
+    }
     for (auto t : triangle_buffer) {
         if (have_common_point(big_triangle, t))
             continue;

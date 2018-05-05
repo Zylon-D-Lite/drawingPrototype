@@ -1,6 +1,8 @@
 #ifndef ZDL_TRIANGLE_H_
 #define ZDL_TRIANGLE_H_
 #include <iostream>
+#include <algorithm>
+#include <vector>
 #include <array>
 #include <cmath>
 
@@ -24,6 +26,9 @@ public:
     void set_x(value_t x) { _x = x; }
     void set_y(value_t y) { _y = y; }
     Coordinate transpose() const  { return Coordinate(_y, _x);}
+    std::string to_string() const {
+        return "(" + std::to_string(_x) + ", " + std::to_string(_y) + ")";
+    }
 private:
     value_t _x, _y;
 };
@@ -46,7 +51,14 @@ public:
     Edge() = default;
     Edge(const point_t& a, const point_t& b)
     {
-        a.x() < b.x() ? (_beg = a, _end = b) : (_beg = b, _end = a);
+        if (a.x() < b.x()) {
+            _beg = a, _end = b;
+        } else if (a.x() == b.x()) {
+            a.y() < b.y() ? (_beg = a, _end = b) : (_beg = b, _end = a);
+        }
+        else {
+            _beg = b, _end = a;
+        }
     }
     Edge(const std::initializer_list<point_t>& il)
         : Edge(*il.begin(), *il.end()) {
@@ -65,16 +77,90 @@ public:
         return (_end.y() - (m() * _end.x()));
     }
 
-    Edge perpendicular_bisector();
-    bool debug();
-    double length();
+    Edge perpendicular_bisector() const;
+    //! Gives all the Coordinates that the Edge passes through
+    std::vector<point_t> all_points() const;
+    std::vector<point_t> all_points_x_sorted() const;
+    std::vector<point_t> all_points_y_sorted() const;
+
+    T x_length() const { return _end.x() - _beg.x(); }
+    T y_length() const { return std::abs(_beg.y() - _end.y()); }
+
+    std::string to_string() const {
+        std::string ret = ("beg = " + _beg.to_string() + "\tend = " + _end.to_string());
+    }
+    bool debug() const;
+    double length() const;
 private:
     point_t _beg;
     point_t _end;
 };
 
+template<typename T>
+std::vector<typename Edge<T>::point_t> Edge<T>::all_points() const
+{
+    std::vector<point_t> ret;
+    if (this->is_vertical()) {
+        const point_t *a, *b;
+        if (_beg.y() < _end.y()) {
+            a = &_beg; b = &_end;
+        } else {
+            a = &_end; b = &_beg;
+        }
+
+        for (T y = a->y(); y < b->y(); ++y) {
+            ret.emplace_back(a->x(), y);
+        }
+        return ret;
+    } else if (this->is_horizontal()) {
+        for (T x = _beg.x(); x < _end.x(); ++x) {
+            ret.emplace_back(x, _beg.y());
+        }
+        return ret;
+    }
+    //for slanted lines all points provides both the x-prioritized
+    //and y-prioritized coordinates in two parts
+    else {
+        for (T x = _beg.x(); x < _end.x(); ++x) {
+            T y = this->m() * x + this->c();
+            ret.emplace_back(x, y);
+        }
+
+        const point_t *a, *b;
+        if (_beg.y() < _end.y()) {
+            a = &_beg; b = &_end;
+        } else {
+            a = &_end; b = &_beg;
+        }
+        for (T y = a->y(); y < b->y(); ++y) {
+            T x = (y - this->c()) / this->m();
+            ret.emplace_back(x, y);
+        }
+        return ret;
+    }
+}
+
+
+template<typename T> std::vector<typename Edge<T>::point_t>
+Edge<T>::all_points_x_sorted() const {
+    auto ret = this->all_points();
+    std::sort(ret.begin(), ret.end(),
+         [](const point_t & a,
+            const point_t & b) { return a.x() < b.x();});
+    return ret;
+
+}
+
+template<typename T> std::vector<typename Edge<T>::point_t> 
+Edge<T>::all_points_y_sorted() const {
+    auto ret = this->all_points();
+    std::sort(ret.begin(), ret.end(),
+         [](const point_t a, const point_t & b) { return a.y() < b.y(); });
+    return ret;
+}
+
 template<typename T> inline
-Edge<T> Edge<T>::perpendicular_bisector() {
+Edge<T> Edge<T>::perpendicular_bisector() const{
     double half_length = length() / 2;
     if (is_vertical()) {
         typename point_t::value_t half_y
@@ -94,15 +180,11 @@ Edge<T> Edge<T>::perpendicular_bisector() {
         double M = -1 / m();
         double C = half_y - (M * half_x);
         double D = length();
-        //here, I wanted to find the Coordinates that are
-        //equidistance from the mid point of the given line.
-        //use the binomial formula -> [-b² ± √{b² - (4ac)}]/[2a] and
-        // length² = x² + y² and
-        // y = orthogonal_m * x + orthogonal_c
-        // std::cout << "C = " << C << '\t' << "D = " << D << std::endl;
-        // std::cout << "-2mc = " << -2*M*C << '\t'
-        //           << "pow(M*D, 2) + pow(D,2) - pow(C,2) = " << pow(M*D, 2) + pow(D,2) - pow(C,2)
-        //           << '\t' << "2 * pow(M,2) + 2 = " << 2 * pow(M,2) + 2 << std::endl;
+        /* Here, I wanted to find the Coordinates that are
+         * equidistance from the mid point of the given line.
+         * Using the binomial formula -> [-b² ± √{b² - (4ac)}]/[2a] and
+         *  length² = x² + y² and
+         *  y = orthogonal_m * x + orthogonal_c */
         double beg_x = half_x - (D/(2 * sin(atan(M))));
         double end_x = half_x + (D/(2 * sin(atan(M))));
 
@@ -112,9 +194,10 @@ Edge<T> Edge<T>::perpendicular_bisector() {
     }
 }
 
-//higher precision specialization of perpendicular_bisector
+//! higher precision specialization of perpendicular_bisector
+//  (does not round the values)
 template<> inline
-Edge<double> Edge<double>::perpendicular_bisector() {
+Edge<double> Edge<double>::perpendicular_bisector() const{
     double half_length = length() / 2;
     if (is_vertical()) {
         typename point_t::value_t half_y
@@ -144,7 +227,7 @@ Edge<double> Edge<double>::perpendicular_bisector() {
 }
 
 template<typename T>
-double Edge<T>::length() {
+double Edge<T>::length() const{
     return sqrt(pow(_beg.x() - _end.x() , 2) + pow(_beg.y() - _end.y(), 2));
 }
 
@@ -209,7 +292,13 @@ public:
     edge_t bc() const { return edge_t(_b, _c);}
     edge_t ac() const { return edge_t(_a, _c);}
 
-
+    std::string to_string() {
+        std::string ret;
+        ret.append("a: " + _a.to_string());
+        ret.append("\nb: " + _b.to_string());
+        ret.append("\nc: " + _c.to_string());
+        return ret;
+    }
 private:
     point_t _a, _b, _c;
 };
@@ -262,8 +351,8 @@ bool have_common_point(const Triangle<U>& left, const Triangle<U>& right)
     if (left.a() == right.a() ||
         left.a() == right.b() ||
         left.a() == right.c() ||
-        left.b() == right.b() ||
         left.b() == right.a() ||
+        left.b() == right.b() ||
         left.b() == right.c() ||
         left.c() == right.a() ||
         left.c() == right.b() ||

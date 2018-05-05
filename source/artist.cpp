@@ -1,7 +1,7 @@
 #include "./artist.hpp"
 
 Artist::Artist() {
-    
+    /*Empty Constructor Body*/
 }
 void Artist::test() {
 
